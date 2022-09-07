@@ -32,14 +32,14 @@ describe('GET /api/articles/:article_id', () => {
 			.get('/api/articles/1')
 			.expect(200)
 			.then(({ body }) => {
-				expect(body.article).toMatchObject({
-					article_id: expect.any(Number),
-					title: expect.any(String),
-    			topic: expect.any(String),
-   				author: expect.any(String),
-    			body: expect.any(String),
-    			created_at: expect.any(String),
-   				votes: expect.any(Number),
+				expect(body.article).toEqual({
+					article_id: 1,
+					title: "Living in the shadow of a great man",
+    			topic: "mitch",
+   				author: "butter_bridge",
+    			body: "I find this existence challenging",
+    			created_at: "2020-07-09T20:11:00.000Z",
+   				votes: 100,
 				})
 			})
 	})
