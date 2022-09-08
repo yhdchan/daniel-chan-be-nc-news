@@ -13,6 +13,10 @@ exports.handle400PSQLErrors = (err, req, res, next) => {
 		} else {
 			res.status(400).send({ msg: 'Bad request! Wrong data type! The increment value must be a non-zero integer.' });
 		}
+	} else if (err.code === '23503') {
+		const errKey = err.detail.match(/[^(]+(?=[)])/g)[0];
+		const errValue = err.detail.match(/[^(]+(?=[)])/g)[1];
+		res.status(404).send({ msg: `No such ${errKey}: ${errValue}`});
 	} else {
 		next(err);
 	}

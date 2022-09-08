@@ -332,6 +332,98 @@ describe('GET /api/articles/:article_id/comments', () => {
 	})
 })
 
+describe('POST /api/articles/:article_id/comments', () => {
+	describe('Successful responses', () => {
+		test('201: should return the posted comment', () => {
+			const testNewComment = {
+				username: 'lurker',
+				body: 'I hate streaming mouth most',
+			};
+			return request(app)
+				.post('/api/articles/1/comments')
+				.send(testNewComment)
+				.expect(201)
+				.then(({ body }) => {
+					expect(body.comment).toMatchObject({
+						comment_id: 19,
+						body: 'I hate streaming mouth most',
+   					votes: 0,
+    				author: 'lurker',
+    				article_id: 1,
+						created_at: expect.any(String),
+					});
+				})
+		})
+	})
+	describe('Error Handling', () => {
+		test('400: should return an error message when passed an incomplete object', () => {
+			const testNewComment = {
+				username: 'lurker',
+			};
+			return request(app)
+				.post('/api/articles/1/comments')
+				.send(testNewComment)
+				.expect(400)
+				.then(({ body }) => {
+					expect(body.msg).toBe('Bad request! Request body only accepts an object with the properties of username and body, while username is registered and body shall not be an empty string.')
+				})
+		})
+		test('400: should return an error message when passed an object that with extra key', () => {
+			const testNewComment = {
+				username: 'lurker',
+				body: 'I hate streaming mouth most',
+				rating: 6,
+			};
+			return request(app)
+				.post('/api/articles/1/comments')
+				.send(testNewComment)
+				.expect(400)
+				.then(({ body }) => {
+					expect(body.msg).toBe('Bad request! Request body only accepts an object with the properties of username and body, while username is registered and body shall not be an empty string.')
+				})
+		})
+		test('400: should return an error message when passed an object that with wrong key', () => {
+			const testNewComment = {
+				name: 'lurker',
+				body: 'I hate streaming mouth most',
+			};
+			return request(app)
+				.post('/api/articles/1/comments')
+				.send(testNewComment)
+				.expect(400)
+				.then(({ body }) => {
+					expect(body.msg).toBe('Bad request! Request body only accepts an object with the properties of username and body, while username is registered and body shall not be an empty string.')
+				})
+		})
+		test('404: should return an error message when passed an article id that does not exist', () => {
+			const testNewComment = {
+				username: 'lurker',
+				body: 'I hate streaming mouth most',
+			};
+			return request(app)
+				.post('/api/articles/1000/comments')
+				.send(testNewComment)
+				.expect(404)
+				.then(({ body }) => {
+					expect(body.msg).toBe('No such article_id: 1000');
+				})
+		})
+		test('404: should return an error message when passed a username that does not exist in users table', () => {
+			const testNewComment = {
+				username: 'not-a-username',
+				body: 'I hate streaming mouth most',
+			};
+			return request(app)
+				.post('/api/articles/1/comments')
+				.send(testNewComment)
+				.expect(404)
+				.then(({ body }) => {
+					expect(body.msg).toBe('No such author: not-a-username');
+				})
+		})
+	})
+})
+
 describe('Error Handling', () => {
 	test('404: should return an error message when passed an api path that does not exist', () => {
 		return request(app)
