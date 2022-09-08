@@ -6,7 +6,17 @@ exports.handleCustomErrors = (err, req, res, next) => {
 	}
 };
 
-exports.handlePSQLErrors = (err, req, res, next) => {};
+exports.handle400PSQLErrors = (err, req, res, next) => {
+	if (err.code === '22P02') {
+		if (typeof req.body.inc_votes === 'number') {
+			res.status(400).send({ msg: 'Bad request! Increment value is not an integer! The increment value must be a non-zero integer.' });
+		} else {
+			res.status(400).send({ msg: 'Bad request! Wrong data type! The increment value must be a non-zero integer.' });
+		}
+	} else {
+		next(err);
+	}
+};
 
 exports.handle500Errors = (err,req, res, next) => {
 	console.log(err);
