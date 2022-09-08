@@ -49,3 +49,39 @@ exports.updateArticleVoteById = (article_id, body) => {
 			})
 	}
 };
+
+exports.selectArticles = (query) => {
+	const { topic } = query;
+	
+	if (!Object.keys(query).includes('topic') && Object.keys(query).length > 0) {
+		return Promise.reject({ status: 400, msg: 'Bad request! Invalid query. Only accept a query for topic' });
+	}
+
+	let queryStr = `
+		SELECT articles.article_id, articles.title, articles.topic, articles.author, articles.body, articles.created_at, articles.votes, CAST(COUNT(comments.article_id) AS INT) AS comment_count
+		FROM articles 
+		LEFT JOIN comments
+		ON articles.article_id=comments.article_id
+	`;
+	const queryValues = [];
+
+  if (topic) {
+    queryStr += `WHERE topic = $1`;
+    queryValues.push(topic);
+  }
+
+  queryStr += `
+		GROUP BY articles.article_id, articles.title, articles.topic, articles.author, articles.body, articles.created_at, articles.votes
+		ORDER BY articles.created_at DESC;
+  `;
+
+	return db
+		.query(queryStr, queryValues)
+		.then(({rows, rowCount}) => {
+			if (rowCount === 0 ) {
+				return Promise.reject({ status: 404, msg: `No such topic: ${topic}`});
+			} else {
+				return rows;
+			}	
+		})
+}
