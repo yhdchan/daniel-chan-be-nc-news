@@ -33,8 +33,10 @@ exports.updateArticleVoteById = (article_id, body) => {
 			`, [article_id, inc_votes])
 			.then(({ rows, rowCount }) => {
 				if (rowCount === 0 ) {
-					return Promise.reject({ status: 404, msg: `No such article_id: ${article_id}`})
-				} else {
+					return Promise.reject({ status: 404, msg: `No such article_id: ${article_id}`});
+				} else if (rows[0].votes < 0) {
+					return Promise.reject({ status: 400, msg: `Bad request! The current number of votes of this article is ${rows[0].votes-inc_votes}. Number of votes cannot be less than 0 after decrement.`}); 
+				} else {	
 					return rows[0];
 				}
 			})

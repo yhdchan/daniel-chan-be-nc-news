@@ -174,6 +174,16 @@ describe('PATCH /api/articles/:article_id', () => {
 				expect(body.msg).toBe('Bad request! Invalid key! Accept only if request body is an object in the form { inc_votes: newVote }, where newVote is a non-zero integer.');
 			})
 		})
+		test('400: should return an error message when the number of votes is less than 0 after decrement', () => {
+			const voteUpdate = { inc_votes: -10000 };
+			return request(app)
+			.patch('/api/articles/1')
+			.send(voteUpdate)
+			.expect(400)
+			.then(({ body }) => {
+				expect(body.msg).toBe('Bad request! The current number of votes of this article is 100. Number of votes cannot be less than 0 after decrement.');
+			})
+		})
 	})
 })
 
