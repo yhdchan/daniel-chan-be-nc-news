@@ -99,3 +99,33 @@ exports.selectArticles = (query) => {
 			}
 		})
 };
+
+exports.selectCommentsByArticleId = (article_id) => {
+	return db
+		.query(`
+			SELECT comment_id, votes, created_at, author, body
+			FROM comments
+			WHERE article_id=${article_id};
+		`)
+		.then(({ rows: commentsRows, rowCount }) => {
+			if (rowCount === 0) {
+				return Promise.all([
+					commentsRows,
+					db.query(`SELECT * FROM articles WHERE article_id=${article_id}`)
+				])
+			} else {
+				return Promise.all([commentsRows]);
+			}
+		})
+		.then(([commentsRows, articlesResult]) => {
+			if (articlesResult !== undefined) {
+				if (articlesResult.rowCount > 0 ) {
+					return commentsRows;
+				} else {
+					return Promise.reject({ status: 404, msg: `No such article_id: ${article_id}`})
+				}	
+			}	else {
+				return commentsRows;
+			}
+		})
+}

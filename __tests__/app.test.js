@@ -15,7 +15,7 @@ describe('GET /api/topics', () => {
 			.expect(200)
 			.then(({ body }) => {
 				expect(body.topics).toBeInstanceOf(Array);
-				expect(body.topics).not.toHaveLength(0);
+				expect(body.topics).toHaveLength(3);
 				body.topics.forEach((topic) => {
 					expect(topic).toMatchObject({
 						slug: expect.any(String),
@@ -78,7 +78,7 @@ describe('GET /api/users', () => {
 			.expect(200)
 			.then(({ body }) => {
 				expect(body.users).toBeInstanceOf(Array);
-				expect(body.users).not.toHaveLength(0);
+				expect(body.users).toHaveLength(4);
 				body.users.forEach((user) => {
 					expect(user).toMatchObject({
 						username: expect.any(String),
@@ -280,6 +280,54 @@ describe('GET /api/articles', () => {
 			.then(({ body }) => {
 				expect(body.msg).toBe('No such topic: not-a-topic');
 			})
+		})
+	})
+})
+
+describe('GET /api/articles/:article_id/comments', () => {
+	describe('Successful responses', () => {
+		test('200: should return an array of comments for the given article_id that have comments in comments table', () => {
+			return request(app)
+				.get('/api/articles/5/comments')
+				.expect(200)
+				.then(({ body }) => {
+					expect(body.comments).toBeInstanceOf(Array);
+					expect(body.comments).toHaveLength(2);
+					expect(body.comments).toEqual([
+						{
+							comment_id: 14,
+							votes: 16,
+							created_at: '2020-06-09T05:00:00.000Z',
+							author: 'icellusedkars',
+							body: 'What do you see? I have no idea where this will lead us. This place I speak of, is known as the Black Lodge.'
+						},
+						{
+							comment_id: 15,
+							votes: 1,
+							created_at: '2020-11-24T00:08:00.000Z',
+							author: 'butter_bridge',
+							body: "I am 100% sure that we're not completely sure."
+						}
+					])
+				})
+		})
+		test('200: should return an empty array for the given article_id that no comments in comments table', () => {
+			return request(app)
+				.get('/api/articles/2/comments')
+				.expect(200)
+				.then(({ body }) => {
+					expect(body.comments).toEqual([]);
+				})
+		})
+	})
+	describe('Error Handling', () => {
+		test('404: should return an error message when passed an article id that does not exist', () => {
+			return request(app)
+				.get('/api/articles/1000/comments')
+				.expect(404)
+				.then(({ body }) => {
+					expect(body.msg).toBe('No such article_id: 1000');
+				})
 		})
 	})
 })
