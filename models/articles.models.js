@@ -58,7 +58,7 @@ exports.selectArticles = (query) => {
 	}
 
 	let queryStr = `
-		SELECT articles.article_id, articles.title, articles.topic, articles.author, articles.body, articles.created_at, articles.votes, CAST(COUNT(comments.article_id) AS INT) AS comment_count
+		SELECT articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, articles.votes, CAST(COUNT(comments.article_id) AS INT) AS comment_count
 		FROM articles 
 		LEFT JOIN comments
 		ON articles.article_id=comments.article_id
@@ -71,17 +71,31 @@ exports.selectArticles = (query) => {
   }
 
   queryStr += `
-		GROUP BY articles.article_id, articles.title, articles.topic, articles.author, articles.body, articles.created_at, articles.votes
+		GROUP BY articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, articles.votes
 		ORDER BY articles.created_at DESC;
   `;
 
 	return db
 		.query(queryStr, queryValues)
-		.then(({rows, rowCount}) => {
-			if (rowCount === 0 ) {
-				return Promise.reject({ status: 404, msg: `No such topic: ${topic}`});
+		.then(({rows: articleRows, rowCount}) => {
+			if (rowCount === 0) {
+				return Promise.all([
+					articleRows,
+					db.query(`SELECT * FROM topics WHERE slug=$1`, queryValues)
+				])
 			} else {
-				return rows;
-			}	
+				return Promise.all([articleRows]);
+			}
 		})
-}
+		.then(([articleRows, topicsResult]) => {
+			if (topicsResult !== undefined) {
+				if (topicsResult.rowCount > 0 ) {
+					return articleRows;
+				} else {
+					return Promise.reject({ status: 404, msg: `No such topic: ${topic}`});
+				}	
+			}	else {
+				return articleRows;
+			}
+		})
+};

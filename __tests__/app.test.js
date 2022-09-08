@@ -213,14 +213,13 @@ describe('GET /api/articles', () => {
 				.expect(200)
 				.then(({ body }) => {
 					expect(body.articles).toBeInstanceOf(Array);
-					expect(body.articles).not.toHaveLength(0);
+					expect(body.articles).toHaveLength(12);
 					body.articles.forEach((article) => {
 						expect(article).toMatchObject({
 							article_id: expect.any(Number),
 							title: expect.any(String),
 							topic: expect.any(String),
 							author: expect.any(String),
-							body: expect.any(String),
 							created_at: expect.any(String),
 							votes: expect.any(Number),
 							comment_count: expect.any(Number),
@@ -242,19 +241,26 @@ describe('GET /api/articles', () => {
 				.expect(200)
 				.then(({ body }) => {
 					expect(body.articles).toBeInstanceOf(Array);
-					expect(body.articles).not.toHaveLength(0);
+					expect(body.articles).toHaveLength(1);
 					expect(body.articles).toEqual([
 						{
 							article_id: 5,
 							title: "UNCOVERED: catspiracy to bring down democracy",
 							topic: "cats",
 							author: "rogersop",
-							body: "Bastet walks amongst us, and the cats are taking arms!",
 							created_at: "2020-08-03T13:14:00.000Z",
 							votes: 0,
 							comment_count: 2,
 						}
 					])
+				})
+		})
+		test('200: should return an empty array when topic is valid but no instances in articles table', () => {
+			return request(app)
+				.get('/api/articles?topic=paper')
+				.expect(200)
+				.then(({ body }) => {
+					expect(body.articles).toEqual([]);
 				})
 		})
 	})
@@ -267,7 +273,7 @@ describe('GET /api/articles', () => {
 				expect(body.msg).toBe('Bad request! Invalid query. Only accept a query for topic');
 			})
 		})
-		test('404: should return an error message when passed a query that topic does not exist', () => {
+		test('404: should return an error message when passed a query that topic does not exist in topics table', () => {
 			return request(app)
 			.get('/api/articles?topic=not-a-topic')
 			.expect(404)
