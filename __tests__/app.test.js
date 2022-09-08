@@ -205,6 +205,85 @@ describe('PATCH /api/articles/:article_id', () => {
 	})
 })
 
+describe('GET /api/articles', () => {
+	describe('Successful responses', () => {
+		test('200: should return an articles array of article objects which should have the properties including author, title, article_id, body, topic, created_at, votes and comment_count', () => {
+			return request(app)
+				.get('/api/articles')
+				.expect(200)
+				.then(({ body }) => {
+					expect(body.articles).toBeInstanceOf(Array);
+					expect(body.articles).toHaveLength(12);
+					body.articles.forEach((article) => {
+						expect(article).toMatchObject({
+							article_id: expect.any(Number),
+							title: expect.any(String),
+							topic: expect.any(String),
+							author: expect.any(String),
+							created_at: expect.any(String),
+							votes: expect.any(Number),
+							comment_count: expect.any(Number),
+						})
+					})
+				})
+		})
+		test('200: articles are sorted by date in descending order by default', () => {
+			return request(app)
+				.get("/api/articles")
+				.expect(200)
+					.then(({ body }) => {
+						expect(body.articles).toBeSortedBy("created_at", { descending: true });
+					});
+		})
+		test('200: articles are filtered by the topic value specified in the query', () => {
+			return request(app)
+				.get('/api/articles?topic=cats')
+				.expect(200)
+				.then(({ body }) => {
+					expect(body.articles).toBeInstanceOf(Array);
+					expect(body.articles).toHaveLength(1);
+					expect(body.articles).toEqual([
+						{
+							article_id: 5,
+							title: "UNCOVERED: catspiracy to bring down democracy",
+							topic: "cats",
+							author: "rogersop",
+							created_at: "2020-08-03T13:14:00.000Z",
+							votes: 0,
+							comment_count: 2,
+						}
+					])
+				})
+		})
+		test('200: should return an empty array when topic is valid but no instances in articles table', () => {
+			return request(app)
+				.get('/api/articles?topic=paper')
+				.expect(200)
+				.then(({ body }) => {
+					expect(body.articles).toEqual([]);
+				})
+		})
+	})
+	describe('Error Handling', () => {
+		test('400: should return an error message when passed an invalid query', () => {
+			return request(app)
+			.get('/api/articles?animal=cats')
+			.expect(400)
+			.then(({ body }) => {
+				expect(body.msg).toBe('Bad request! Invalid query. Only accept a query for topic');
+			})
+		})
+		test('404: should return an error message when passed a query that topic does not exist in topics table', () => {
+			return request(app)
+			.get('/api/articles?topic=not-a-topic')
+			.expect(404)
+			.then(({ body }) => {
+				expect(body.msg).toBe('No such topic: not-a-topic');
+			})
+		})
+	})
+})
+
 describe('Error Handling', () => {
 	test('404: should return an error message when passed an api path that does not exist', () => {
 		return request(app)
