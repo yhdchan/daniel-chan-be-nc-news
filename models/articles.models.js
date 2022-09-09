@@ -129,3 +129,17 @@ exports.selectCommentsByArticleId = (article_id) => {
 			}
 		})
 }
+
+exports.createCommentByArticleId = (article_id, newComment) => {
+	const { username, body } = newComment;
+
+	if (!username || !body || Object.keys(newComment).length !== 2) {
+		return Promise.reject({ status: 400, msg: 'Bad request! Request body only accepts an object with the properties of username and body, while username is registered and body shall not be an empty string.'})
+	}
+	
+	return db
+		.query('INSERT INTO comments (body, author, article_id) VALUES ($1, $2, $3) RETURNING *;', [body, username, article_id])
+		.then(({ rows }) => {
+			return (rows[0]);
+		})
+}

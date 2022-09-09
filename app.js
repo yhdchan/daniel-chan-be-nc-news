@@ -3,7 +3,8 @@ const {
 	getArticleById, 
 	patchArticleVoteById, 
 	getArticles, 
-	getCommentsByArticleId
+	getCommentsByArticleId,
+	postCommentsByArticleId
 } = require('./controllers/articles.controllers');
 const { 
 	handleCustomErrors, 
@@ -21,7 +22,7 @@ app.get('/api/articles/:article_id', getArticleById);
 app.patch('/api/articles/:article_id', patchArticleVoteById)
 app.get('/api/articles', getArticles);
 app.get('/api/articles/:article_id/comments', getCommentsByArticleId);
-
+app.post('/api/articles/:article_id/comments', postCommentsByArticleId);
 
 app.get('/api/topics', getTopics);
 
