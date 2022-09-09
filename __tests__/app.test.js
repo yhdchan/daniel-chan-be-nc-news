@@ -522,6 +522,22 @@ describe('POST /api/articles/:article_id/comments', () => {
 	})
 })
 
+describe('DELETE /api/comments/:comment_id', () => {
+	test('204: should return no content', () => {
+		return request(app)
+      .delete('/api/comments/1')
+      .expect(204)
+	})
+	test('404: should return an error message when passed an article id that does not exist', () => {
+		return request(app)
+				.delete('/api/comments/1000')
+				.expect(404)
+				.then(({ body }) => {
+					expect(body.msg).toBe('No such comment_id: 1000');
+				})
+	})
+})
+
 describe('Error Handling', () => {
 	test('404: should return an error message when passed an api path that does not exist', () => {
 		return request(app)
