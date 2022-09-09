@@ -51,12 +51,34 @@ exports.updateArticleVoteById = (article_id, body) => {
 };
 
 exports.selectArticles = (query) => {
-	const { topic } = query;
-	
-	if (!Object.keys(query).includes('topic') && Object.keys(query).length > 0) {
-		return Promise.reject({ status: 400, msg: 'Bad request! Invalid query. Only accept a query for topic' });
+	const { topic, sort_by = 'created_at', order = 'DESC' } = query;
+
+	const validQueriesCheck = (arr) => {
+		for (const element of arr) {
+			if (element !== 'topic' && element !== 'order' && element !== 'sort_by'){
+				return false;
+			}
+		}
+		return true
 	}
 
+	if (!validQueriesCheck(Object.keys(query))) {
+		return Promise.reject({ status: 400, msg: 'Bad request! Invalid query. Only accept the queries for topic, sort_by and/or order' });
+	}
+
+	const validColumns = [
+    "article_id",
+    "title",
+    "topic",
+    "author",
+    "created_at",
+    "votes",
+		"comment_count"
+  ];
+
+  if (!validColumns.includes(sort_by)) {
+    return Promise.reject({ status: 400, msg: `Bad request! \'${sort_by}\' is not an existing column` });
+  }
 	let queryStr = `
 		SELECT articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, articles.votes, CAST(COUNT(comments.article_id) AS INT) AS comment_count
 		FROM articles 
@@ -72,7 +94,7 @@ exports.selectArticles = (query) => {
 
   queryStr += `
 		GROUP BY articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, articles.votes
-		ORDER BY articles.created_at DESC;
+		ORDER BY articles.${sort_by} ${order};
   `;
 
 	return db

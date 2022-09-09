@@ -17,6 +17,8 @@ exports.handle400PSQLErrors = (err, req, res, next) => {
 		const errKey = err.detail.match(/[^(]+(?=[)])/g)[0];
 		const errValue = err.detail.match(/[^(]+(?=[)])/g)[1];
 		res.status(404).send({ msg: `No such ${errKey}: ${errValue}`});
+	} else if (err.code === '42601') {
+		res.status(400).send({ msg: `Bad request! Invalid order query!`});
 	} else {
 		next(err);
 	}
