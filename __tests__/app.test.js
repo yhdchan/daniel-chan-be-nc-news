@@ -227,12 +227,38 @@ describe('GET /api/articles', () => {
 					})
 				})
 		})
-		test('200: articles are sorted by date in descending order by default', () => {
+		test('200: should return articles are sorted by date in descending order by default', () => {
 			return request(app)
 				.get("/api/articles")
 				.expect(200)
 					.then(({ body }) => {
 						expect(body.articles).toBeSortedBy("created_at", { descending: true });
+					});
+		})
+		test('200: should return articles are sorted any valid column (defaults to date) in descending order by default', () => {
+			return request(app)
+				.get("/api/articles?sort_by=title")
+				.expect(200)
+					.then(({ body }) => {
+						expect(body.articles).toBeSortedBy("title", { descending: true });
+					});
+		})
+		test('200: should return articles are sorted by date by default but in ascending order (defaults to descending)', () => {
+			return request(app)
+			.get("/api/articles?order=asc")
+			.expect(200)
+			.then(({ body }) => {
+				expect(body.articles).toBeSortedBy("created_at");
+			});
+		})
+		test('200: should return articles are sorted by any valid column (defaults to date) or/and order, which can be set to asc or desc for ascending or descending (defaults to descending)', () => {
+			return request(app)
+				.get("/api/articles?sort_by=article_id&order=asc")
+				.expect(200)
+					.then(({ body }) => {
+						expect(body.articles).toBeSortedBy("article_id", {
+							coerce: true,
+						});
 					});
 		})
 		test('200: articles are filtered by the topic value specified in the query', () => {
@@ -265,17 +291,89 @@ describe('GET /api/articles', () => {
 		})
 	})
 	describe('Error Handling', () => {
+		test("400: for a sort_by that is not an exisiting column", () => {
+      return request(app)
+        .get("/api/articles?sort_by=not_a_column")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request! 'not_a_column' is not an existing column");
+        });
+    });
+		test("400: for a sort_by that is not an exisiting column with others valid queries", () => {
+      return request(app)
+        .get("/api/articles?topic=cats&sort_by=not_a_column")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request! 'not_a_column' is not an existing column");
+        });
+    });
+		test("400: for a order that is an invalid order", () => {
+      return request(app)
+        .get("/api/articles?order=not_an_order")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request! Invalid order query!");
+        });
+    });
+		test("400: for a order that is an invalid order with other valid queries", () => {
+      return request(app)
+        .get("/api/articles?topic=cats&sort_by=article_id&order=not_an_order")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request! Invalid order query!");
+        });
+    });
 		test('400: should return an error message when passed an invalid query', () => {
 			return request(app)
 			.get('/api/articles?animal=cats')
 			.expect(400)
 			.then(({ body }) => {
-				expect(body.msg).toBe('Bad request! Invalid query. Only accept a query for topic');
+				expect(body.msg).toBe('Bad request! Invalid query. Only accept the queries for topic, sort_by and/or order');
+			})
+		})
+		test('400: should return an error message when passed more than one invalid queries', () => {
+			return request(app)
+			.get('/api/articles?animal=cats&fruit=banana')
+			.expect(400)
+			.then(({ body }) => {
+				expect(body.msg).toBe('Bad request! Invalid query. Only accept the queries for topic, sort_by and/or order');
+			})
+		})
+		test('400: should return an error message when passed an invalid queries with others valid queries', () => {
+			return request(app)
+			.get('/api/articles?animal=cats&sort_by=article_id&order=asc')
+			.expect(400)
+			.then(({ body }) => {
+				expect(body.msg).toBe('Bad request! Invalid query. Only accept the queries for topic, sort_by and/or order');
+			})
+		})
+		test('400: should return an error message that when passed an invalid queries with others valid queries but invalid values', () => {
+			return request(app)
+			.get('/api/articles?animal=cats&sort_by=not_a_column&order=not_an_order')
+			.expect(400)
+			.then(({ body }) => {
+				expect(body.msg).toBe('Bad request! Invalid query. Only accept the queries for topic, sort_by and/or order');
+			})
+		})
+		test('400: should return an error message that when passed a valid filter query with others valid queries but invalid values', () => {
+			return request(app)
+			.get('/api/articles?topic=cats&sort_by=not_a_column&order=not_an_order')
+			.expect(400)
+			.then(({ body }) => {
+				expect(body.msg).toBe('Bad request! \'not_a_column\' is not an existing column');
 			})
 		})
 		test('404: should return an error message when passed a query that topic does not exist in topics table', () => {
 			return request(app)
 			.get('/api/articles?topic=not-a-topic')
+			.expect(404)
+			.then(({ body }) => {
+				expect(body.msg).toBe('No such topic: not-a-topic');
+			})
+		})
+		test('404: should return an error message when passed a query that topic does not exist in topics table with others valid queries', () => {
+			return request(app)
+			.get('/api/articles?sort_by=article_id&order=asc&topic=not-a-topic')
 			.expect(404)
 			.then(({ body }) => {
 				expect(body.msg).toBe('No such topic: not-a-topic');
