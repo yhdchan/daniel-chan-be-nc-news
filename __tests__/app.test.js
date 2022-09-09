@@ -69,6 +69,14 @@ describe('GET /api/articles/:article_id', () => {
 				expect(body.msg).toBe('No such article_id: 1000');
 			})
 	})
+	test('400: should return an error message when passed an article id that is not a positive integer', () => {
+		return request(app)
+			.get('/api/articles/abc')
+			.expect(400)
+			.then(({ body }) => {
+				expect(body.msg).toBe('Bad request! Wrong data type for id!');
+			})
+	})
 })
 
 describe('GET /api/users', () => {
@@ -140,6 +148,16 @@ describe('PATCH /api/articles/:article_id', () => {
 				.expect(404)
 				.then(({ body }) => {
 					expect(body.msg).toBe('No such article_id: 1000');
+				})
+		})
+		test('400: should return an error message when passed an article id that is not a positive integer', () => {
+			const voteUpdate = { inc_votes: 1 };
+			return request(app)
+				.patch('/api/articles/abc')
+				.send(voteUpdate)
+				.expect(400)
+				.then(({ body }) => {
+					expect(body.msg).toBe('Bad request! Wrong data type for id!');
 				})
 		})
 		test('400: should return an error message when passed an object that value is equal to 0', () => {
@@ -427,6 +445,14 @@ describe('GET /api/articles/:article_id/comments', () => {
 					expect(body.msg).toBe('No such article_id: 1000');
 				})
 		})
+		test('400: should return an error message when passed an article id that is not a positive integer', () => {
+			return request(app)
+				.get('/api/articles/abc/comments')
+				.expect(400)
+				.then(({ body }) => {
+					expect(body.msg).toBe('Bad request! Wrong data type for id!');
+				})
+		})
 	})
 })
 
@@ -506,6 +532,19 @@ describe('POST /api/articles/:article_id/comments', () => {
 					expect(body.msg).toBe('No such article_id: 1000');
 				})
 		})
+		test('400: should return an error message when passed an article id that is not a positive integer', () => {
+			const testNewComment = {
+				username: 'lurker',
+				body: 'I hate streaming mouth most',
+			};
+			return request(app)
+				.post('/api/articles/abc/comments')
+				.send(testNewComment)
+				.expect(400)
+				.then(({ body }) => {
+					expect(body.msg).toBe('Bad request! Wrong data type for id!');
+				})
+		})
 		test('404: should return an error message when passed a username that does not exist in users table', () => {
 			const testNewComment = {
 				username: 'not-a-username',
@@ -519,6 +558,30 @@ describe('POST /api/articles/:article_id/comments', () => {
 					expect(body.msg).toBe('No such author: not-a-username');
 				})
 		})
+	})
+})
+
+describe('DELETE /api/comments/:comment_id', () => {
+	test('204: should return no content', () => {
+		return request(app)
+      .delete('/api/comments/1')
+      .expect(204)
+	})
+	test('404: should return an error message when passed an article id that does not exist', () => {
+		return request(app)
+				.delete('/api/comments/1000')
+				.expect(404)
+				.then(({ body }) => {
+					expect(body.msg).toBe('No such comment_id: 1000');
+				})
+	})
+	test('400: should return an error message when passed an article id that not an integer', () => {
+		return request(app)
+				.delete('/api/comments/abc')
+				.expect(400)
+				.then(({ body }) => {
+					expect(body.msg).toBe('Bad request! Wrong data type for id!');
+				})
 	})
 })
 

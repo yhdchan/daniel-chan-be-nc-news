@@ -160,7 +160,7 @@ exports.createCommentByArticleId = (article_id, newComment) => {
 	}
 	
 	return db
-		.query('INSERT INTO comments (body, author, article_id) VALUES ($1, $2, $3) RETURNING *;', [body, username, article_id])
+		.query('INSERT INTO comments (body, author, article_id) VALUES ($2, $3, $1) RETURNING *;', [article_id, body, username])
 		.then(({ rows }) => {
 			return (rows[0]);
 		})
