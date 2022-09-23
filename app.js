@@ -15,9 +15,15 @@ const {
 const { getTopics } = require('./controllers/topics.controllers');
 const { getUsers } = require('./controllers/users.controllers');
 
+const endpoints = require('./endpoints.json');
+
 const app = express()
 
 app.use(express.json())
+
+app.get('/api', (req, res, next) => {
+	res.status(200).json(endpoints);
+})
 
 app.get('/api/articles/:article_id', getArticleById);
 app.patch('/api/articles/:article_id', patchArticleVoteById)
@@ -31,7 +37,7 @@ app.get('/api/topics', getTopics);
 
 app.get('/api/users', getUsers);
 
-app.all('*', (req,res,next) => {
+app.all('*', (req, res, next) => {
 	res.status(404).send({ msg: 'not found! api path does not exist!'})
 });
 
