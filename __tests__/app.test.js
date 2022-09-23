@@ -299,9 +299,341 @@ describe('GET /api/articles', () => {
 					])
 				})
 		})
+		test('200: should return articles are filtered by the topic value specified in the query and sorted by any valid column (defaults to date) or/and order, which can be set to asc or desc for ascending or descending (defaults to descending)', () => {
+			return request(app)
+				.get('/api/articles?topic=mitch&sort_by=article_id&order=asc')
+				.expect(200)
+				.then(({ body }) => {
+					expect(body.articles).toBeInstanceOf(Array);
+					expect(body.articles).toHaveLength(11);
+					expect(body.articles).toEqual([
+						{
+							article_id: 1,
+							title: "Living in the shadow of a great man",
+							topic: "mitch",
+							author: "butter_bridge",
+							created_at: "2020-07-09T20:11:00.000Z",
+							votes: 100,
+							comment_count: 11,
+						},
+						{
+							article_id: 2,
+							title: "Sony Vaio; or, The Laptop",
+							topic: "mitch",
+							author: "icellusedkars",
+							created_at: "2020-10-16T05:03:00.000Z",
+							votes: 0,
+							comment_count: 0,
+						},
+						{
+							article_id: 3,
+							title: "Eight pug gifs that remind me of mitch",
+							topic: "mitch",
+							author: "icellusedkars",
+							created_at: "2020-11-03T09:12:00.000Z",
+							votes: 0,
+							comment_count: 2,
+						},
+						{
+							article_id: 4,
+							title: "Student SUES Mitch!",
+							topic: "mitch",
+							author: "rogersop",
+							created_at: "2020-05-06T01:14:00.000Z",
+							votes: 0,
+							comment_count: 0,
+						},
+						{
+							article_id: 6,
+							title: "A",
+							topic: "mitch",
+							author: "icellusedkars",
+							created_at: "2020-10-18T01:00:00.000Z",
+							votes: 0,
+							comment_count: 1,
+						},
+						{
+							article_id: 7,
+							title: "Z",
+							topic: "mitch",
+							author: "icellusedkars",
+							created_at: "2020-01-07T14:08:00.000Z",
+							votes: 0,
+							comment_count: 0,
+						},
+						{
+							article_id: 8,
+							title: "Does Mitch predate civilisation?",
+							topic: "mitch",
+							author: "icellusedkars",
+							created_at: "2020-04-17T01:08:00.000Z",
+							votes: 0,
+							comment_count: 0,
+						},
+						{
+							article_id: 9,
+							title: "They're not exactly dogs, are they?",
+							topic: "mitch",
+							author: "butter_bridge",
+							created_at: "2020-06-06T09:10:00.000Z",
+							votes: 0,
+							comment_count: 2,
+						},
+						{
+							article_id: 10,
+							title: "Seven inspirational thought leaders from Manchester UK",
+							topic: "mitch",
+							author: "rogersop",
+							created_at: "2020-05-14T04:15:00.000Z",
+							votes: 0,
+							comment_count: 0,
+						},
+						{
+							article_id: 11,
+							title: "Am I a cat?",
+							topic: "mitch",
+							author: "icellusedkars",
+							created_at: "2020-01-15T22:21:00.000Z",
+							votes: 0,
+							comment_count: 0,
+						},
+						{
+							article_id: 12,
+							title: "Moustache",
+							topic: "mitch",
+							author: "butter_bridge",
+							created_at: "2020-10-11T11:24:00.000Z",
+							votes: 0,
+							comment_count: 0,
+						},
+					])
+				})
+		})
 		test('200: should return an empty array when topic is valid but no instances in articles table', () => {
 			return request(app)
 				.get('/api/articles?topic=paper')
+				.expect(200)
+				.then(({ body }) => {
+					expect(body.articles).toEqual([]);
+				})
+		})
+		test('200: should return articles are filtered by the author value specified in the query', () => {
+			return request(app)
+				.get('/api/articles?author=icellusedkars')
+				.expect(200)
+				.then(({ body }) => {
+					expect(body.articles).toBeInstanceOf(Array);
+					expect(body.articles).toHaveLength(6);
+					expect(body.articles).toEqual([
+						{
+							article_id: 3,
+							title: "Eight pug gifs that remind me of mitch",
+							topic: "mitch",
+							author: "icellusedkars",
+							created_at: "2020-11-03T09:12:00.000Z",
+							votes: 0,
+							comment_count: 2,
+						},
+						{
+							article_id: 6,
+							title: "A",
+							topic: "mitch",
+							author: "icellusedkars",
+							created_at: "2020-10-18T01:00:00.000Z",
+							votes: 0,
+							comment_count: 1,
+						},
+						{
+							article_id: 2,
+							title: "Sony Vaio; or, The Laptop",
+							topic: "mitch",
+							author: "icellusedkars",
+							created_at: "2020-10-16T05:03:00.000Z",
+							votes: 0,
+							comment_count: 0,
+						},
+						{
+							article_id: 8,
+							title: "Does Mitch predate civilisation?",
+							topic: "mitch",
+							author: "icellusedkars",
+							created_at: "2020-04-17T01:08:00.000Z",
+							votes: 0,
+							comment_count: 0,
+						},
+						{
+							article_id: 11,
+							title: "Am I a cat?",
+							topic: "mitch",
+							author: "icellusedkars",
+							created_at: "2020-01-15T22:21:00.000Z",
+							votes: 0,
+							comment_count: 0,
+						},
+						{
+							article_id: 7,
+							title: "Z",
+							topic: "mitch",
+							author: "icellusedkars",
+							created_at: "2020-01-07T14:08:00.000Z",
+							votes: 0,
+							comment_count: 0,
+						},
+					]);
+				})
+		})
+		test('200: should return articles are filtered by the author value specified in the query and sorted by any valid column (defaults to date) or/and order, which can be set to asc or desc for ascending or descending (defaults to descending)', () => {
+			return request(app)
+				.get('/api/articles?author=icellusedkars&sort_by=article_id')
+				.expect(200)
+				.then(({ body }) => {
+					expect(body.articles).toBeInstanceOf(Array);
+					expect(body.articles).toHaveLength(6);
+					expect(body.articles).toEqual([
+						{
+							article_id: 11,
+							title: "Am I a cat?",
+							topic: "mitch",
+							author: "icellusedkars",
+							created_at: "2020-01-15T22:21:00.000Z",
+							votes: 0,
+							comment_count: 0,
+						},
+						{
+							article_id: 8,
+							title: "Does Mitch predate civilisation?",
+							topic: "mitch",
+							author: "icellusedkars",
+							created_at: "2020-04-17T01:08:00.000Z",
+							votes: 0,
+							comment_count: 0,
+						},
+						{
+							article_id: 7,
+							title: "Z",
+							topic: "mitch",
+							author: "icellusedkars",
+							created_at: "2020-01-07T14:08:00.000Z",
+							votes: 0,
+							comment_count: 0,
+						},
+						{
+							article_id: 6,
+							title: "A",
+							topic: "mitch",
+							author: "icellusedkars",
+							created_at: "2020-10-18T01:00:00.000Z",
+							votes: 0,
+							comment_count: 1,
+						},
+						{
+							article_id: 3,
+							title: "Eight pug gifs that remind me of mitch",
+							topic: "mitch",
+							author: "icellusedkars",
+							created_at: "2020-11-03T09:12:00.000Z",
+							votes: 0,
+							comment_count: 2,
+						},
+						{
+							article_id: 2,
+							title: "Sony Vaio; or, The Laptop",
+							topic: "mitch",
+							author: "icellusedkars",
+							created_at: "2020-10-16T05:03:00.000Z",
+							votes: 0,
+							comment_count: 0,
+						},
+					]);
+				})
+		})
+		test('200: should return articles are filtered by the topic and author value specified in the query', () => {
+			return request(app)
+				.get('/api/articles?topic=mitch&author=butter_bridge')
+				.expect(200)
+				.then(({ body }) => {
+					expect(body.articles).toBeInstanceOf(Array);
+					expect(body.articles).toHaveLength(3);
+					expect(body.articles).toEqual([
+						{
+							article_id: 12,
+							title: "Moustache",
+							topic: "mitch",
+							author: "butter_bridge",
+							created_at: "2020-10-11T11:24:00.000Z",
+							votes: 0,
+							comment_count: 0,
+						},
+						{
+							article_id: 1,
+							title: "Living in the shadow of a great man",
+							topic: "mitch",
+							author: "butter_bridge",
+							created_at: "2020-07-09T20:11:00.000Z",
+							votes: 100,
+							comment_count: 11,
+						},
+						{
+							article_id: 9,
+							title: "They're not exactly dogs, are they?",
+							topic: "mitch",
+							author: "butter_bridge",
+							created_at: "2020-06-06T09:10:00.000Z",
+							votes: 0,
+							comment_count: 2,
+						}
+					]);
+				})
+		})
+		test('200: should return articles are filtered by the topic and author value specified in the query and sorted by any valid column (defaults to date) or/and order, which can be set to asc or desc for ascending or descending (defaults to descending)', () => {
+			return request(app)
+				.get('/api/articles?topic=mitch&author=butter_bridge&sort_by=article_id&order=asc')
+				.expect(200)
+				.then(({ body }) => {
+					expect(body.articles).toBeInstanceOf(Array);
+					expect(body.articles).toHaveLength(3);
+					expect(body.articles).toEqual([
+						{
+							article_id: 1,
+							title: "Living in the shadow of a great man",
+							topic: "mitch",
+							author: "butter_bridge",
+							created_at: "2020-07-09T20:11:00.000Z",
+							votes: 100,
+							comment_count: 11,
+						},
+						{
+							article_id: 9,
+							title: "They're not exactly dogs, are they?",
+							topic: "mitch",
+							author: "butter_bridge",
+							created_at: "2020-06-06T09:10:00.000Z",
+							votes: 0,
+							comment_count: 2,
+						},
+						{
+							article_id: 12,
+							title: "Moustache",
+							topic: "mitch",
+							author: "butter_bridge",
+							created_at: "2020-10-11T11:24:00.000Z",
+							votes: 0,
+							comment_count: 0,
+						},
+					]);
+				})
+		})
+		test('200: should return an empty array when author does exist in users table but no instances in articles table', () => {
+			return request(app)
+				.get('/api/articles?author=lurker')
+				.expect(200)
+				.then(({ body }) => {
+					expect(body.articles).toEqual([]);
+				})
+		})
+		test('200: should return an empty array when topic and author do exist in topics table and users table respectively but no instances in articles table', () => {
+			return request(app)
+				.get('/api/articles?topic=mitch&author=lurker')
 				.expect(200)
 				.then(({ body }) => {
 					expect(body.articles).toEqual([]);
@@ -395,6 +727,70 @@ describe('GET /api/articles', () => {
 			.expect(404)
 			.then(({ body }) => {
 				expect(body.msg).toBe('No such topic: not-a-topic');
+			})
+		})
+		test('404: should return an error message when passed a query that author does not exist in users table', () => {
+			return request(app)
+			.get('/api/articles?author=not-an-author')
+			.expect(404)
+			.then(({ body }) => {
+				expect(body.msg).toBe('No such author: not-an-author');
+			})
+		})
+		test('404: should return an error message when passed a query that author does not exist in users table with others valid queries', () => {
+			return request(app)
+			.get('/api/articles?sort_by=article_id&order=asc&author=not-an-author')
+			.expect(404)
+			.then(({ body }) => {
+				expect(body.msg).toBe('No such author: not-an-author');
+			})
+		})
+		test('404: should return an error message when passed queries that author does not exist in users table but topic does exist in topics table', () => {
+			return request(app)
+			.get('/api/articles?topic=mitch&author=not-an-author')
+			.expect(404)
+			.then(({ body }) => {
+				expect(body.msg).toBe('No such author: not-an-author');
+			})
+		})
+		test('404: should return an error message when passed queries that author does not exist in users table but topic does exist in topics table with others valid queries', () => {
+			return request(app)
+			.get('/api/articles?sort_by=article_id&order=asc&topic=mitch&author=not-an-author')
+			.expect(404)
+			.then(({ body }) => {
+				expect(body.msg).toBe('No such author: not-an-author');
+			})
+		})
+		test('404: should return an error message when passed queries that author does exist in users table but topic does not exist in topics table', () => {
+			return request(app)
+			.get('/api/articles?topic=not-a-topic&author=butter_bridge')
+			.expect(404)
+			.then(({ body }) => {
+				expect(body.msg).toBe('No such topic: not-a-topic');
+			})
+		})
+		test('404: should return an error message when passed queries that author does exist in users table but topic does not exist in topics table with others valid queries', () => {
+			return request(app)
+			.get('/api/articles?sort_by=article_id&order=asc&topic=not-a-topic&author=butter_bridge')
+			.expect(404)
+			.then(({ body }) => {
+				expect(body.msg).toBe('No such topic: not-a-topic');
+			})
+		})
+		test('404: should return an error message when passed queries that both topic and author does exist in topics and users table respectively', () => {
+			return request(app)
+			.get('/api/articles?topic=not-a-topic&author=not-an-author')
+			.expect(404)
+			.then(({ body }) => {
+				expect(body.msg).toBe('No such topic: not-a-topic and no such author: not-an-author');
+			})
+		})
+		test('404: should return an error message when passed queries that both topic and author does exist in topics and users table respectively with others valid queries', () => {
+			return request(app)
+			.get('/api/articles?sort_by=article_id&order=asc&topic=not-a-topic&author=not-an-author')
+			.expect(404)
+			.then(({ body }) => {
+				expect(body.msg).toBe('No such topic: not-a-topic and no such author: not-an-author');
 			})
 		})
 	})
@@ -592,6 +988,29 @@ describe('Error Handling', () => {
 			.expect(404)
 			.then(({ body }) => {
 				expect(body.msg).toBe('not found! api path does not exist!')
+			})
+	})
+})
+
+describe('GET /api', () => {
+	test('200: should return endpoints.json', () => {
+		return request(app)
+			.get('/api')
+			.expect("Content-Type", /json/)
+			.expect(200)
+			.then(({ body }) => {
+				expect(Object.keys(body.endpoints)).toHaveLength(9)
+				expect(Object.keys(body.endpoints)).toEqual([
+					"GET /api",
+					"GET /api/articles",
+					"GET /api/articles/:article_id",
+					"PATCH /api/articles/:article_id",
+					"GET /api/articles/:article_id/comments",
+					"POST /api/articles/:article_id/comments",
+					"DELETE /api/comments/:comment_id",
+					"GET /api/topics",
+					"GET /api/users"
+				])
 			})
 	})
 })

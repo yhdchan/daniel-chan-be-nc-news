@@ -51,11 +51,11 @@ exports.updateArticleVoteById = (article_id, body) => {
 };
 
 exports.selectArticles = (query) => {
-	const { topic, sort_by = 'created_at', order = 'DESC' } = query;
+	const { author, topic, sort_by = 'created_at', order = 'DESC' } = query;
 
 	const validQueriesCheck = (arr) => {
 		for (const element of arr) {
-			if (element !== 'topic' && element !== 'order' && element !== 'sort_by'){
+			if (element !== 'author' && element !== 'topic' && element !== 'order' && element !== 'sort_by'){
 				return false;
 			}
 		}
@@ -87,9 +87,17 @@ exports.selectArticles = (query) => {
 	`;
 	const queryValues = [];
 
-  if (topic) {
-    queryStr += `WHERE topic = $1`;
-    queryValues.push(topic);
+	if (topic || author) {
+		if (topic && author) {
+			queryStr += `WHERE topic = $1 AND articles.author =$2`;
+			queryValues.push(topic, author);
+		} else if (topic) {
+			queryStr += `WHERE topic = $1`;
+			queryValues.push(topic);
+		} else {
+			queryStr += `WHERE articles.author = $1`;
+			queryValues.push(author);
+		}
   }
 
   queryStr += `
@@ -99,25 +107,53 @@ exports.selectArticles = (query) => {
 
 	return db
 		.query(queryStr, queryValues)
-		.then(({rows: articleRows, rowCount}) => {
+		.then(({rows, rowCount}) => {
 			if (rowCount === 0) {
-				return Promise.all([
-					articleRows,
-					db.query(`SELECT * FROM topics WHERE slug=$1`, queryValues)
-				])
+				if (topic || author) {
+					if (topic && author) {
+						return Promise.all([
+							rows,
+							db.query(`SELECT * FROM topics WHERE slug=$1`, [queryValues[0]]),
+							db.query(`SELECT * FROM users WHERE username=$1`, [queryValues[1]]),
+						])
+					} else if (topic) {
+						return Promise.all([
+							rows,
+							db.query(`SELECT * FROM topics WHERE slug=$1`, queryValues)
+						])
+					} else {
+						return Promise.all([
+							rows,
+							db.query(`SELECT * FROM users WHERE username=$1`, queryValues)
+						])
+					}
+				}
 			} else {
-				return Promise.all([articleRows]);
+				return Promise.all([rows]);
 			}
 		})
-		.then(([articleRows, topicsResult]) => {
-			if (topicsResult !== undefined) {
-				if (topicsResult.rowCount > 0 ) {
-					return articleRows;
+		.then(([rows, result1, result2]) => {
+			if (result1 !== undefined || result2 !== undefined) {
+				if (topic && author) {
+					if (result1.rowCount > 0 && result2.rowCount > 0) {
+						return rows;
+					} else if (result1.rowCount === 0 && result2.rowCount > 0) {
+						return Promise.reject({ status: 404, msg: `No such topic: ${queryValues[0]}`});
+					} else if (result1.rowCount > 0 && result2.rowCount === 0) {
+						return Promise.reject({ status: 404, msg: `No such author: ${queryValues[1]}`});
+					} else {
+						return Promise.reject({ status: 404, msg: `No such topic: ${queryValues[0]} and no such author: ${queryValues[1]}`});
+					}
 				} else {
-					return Promise.reject({ status: 404, msg: `No such topic: ${topic}`});
-				}	
+					if (result1.rowCount > 0) {
+						return rows;
+					}	else {
+						const key = Object.keys(query).find(key => query[key] === queryValues[0]);
+						return Promise.reject({ status: 404, msg: `No such ${key}: ${queryValues[0]}`});
+					}
+				}
 			}	else {
-				return articleRows;
+				return rows;
 			}
 		})
 };
