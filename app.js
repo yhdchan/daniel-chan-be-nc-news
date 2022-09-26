@@ -1,41 +1,17 @@
 const express = require('express');
-const { 
-	getArticleById, 
-	patchArticleVoteById, 
-	getArticles, 
-	getCommentsByArticleId,
-	postCommentsByArticleId
-} = require('./controllers/articles.controllers');
-const { deleteCommentById } = require('./controllers/comments.controllers');
+
 const { 
 	handleCustomErrors, 
 	handle400PSQLErrors, 
 	handle500Errors 
 } = require('./controllers/errors.controllers');
-const { getTopics } = require('./controllers/topics.controllers');
-const { getUsers } = require('./controllers/users.controllers');
-
-const endpoints = require('./endpoints.json');
+const apiRouter = require('./routes/api.router');
 
 const app = express()
 
 app.use(express.json())
 
-app.get('/api', (req, res, next) => {
-	res.status(200).json(endpoints);
-})
-
-app.get('/api/articles/:article_id', getArticleById);
-app.patch('/api/articles/:article_id', patchArticleVoteById)
-app.get('/api/articles', getArticles);
-app.get('/api/articles/:article_id/comments', getCommentsByArticleId);
-app.post('/api/articles/:article_id/comments', postCommentsByArticleId);
-
-app.delete('/api/comments/:comment_id', deleteCommentById);
-
-app.get('/api/topics', getTopics);
-
-app.get('/api/users', getUsers);
+app.use('/api', apiRouter);
 
 app.all('*', (req, res, next) => {
 	res.status(404).send({ msg: 'not found! api path does not exist!'})
