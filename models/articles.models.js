@@ -100,10 +100,18 @@ exports.selectArticles = (query) => {
 		}
   }
 
-  queryStr += `
+	if(sort_by === 'comment_count') {
+		queryStr += `
 		GROUP BY articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, articles.votes
-		ORDER BY articles.${sort_by} ${order};
-  `;
+		ORDER BY COUNT(comments.article_id) ${order};
+  	`;
+	} else {
+		queryStr += `
+			GROUP BY articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, articles.votes
+			ORDER BY articles.${sort_by} ${order};
+		`;
+	}
+
 
 	return db
 		.query(queryStr, queryValues)

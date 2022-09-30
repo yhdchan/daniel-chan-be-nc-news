@@ -271,10 +271,10 @@ describe('GET /api/articles', () => {
 		})
 		test('200: should return articles are sorted by any valid column (defaults to date) or/and order, which can be set to asc or desc for ascending or descending (defaults to descending)', () => {
 			return request(app)
-				.get("/api/articles?sort_by=article_id&order=asc")
+				.get("/api/articles?sort_by=comment_count&order=asc")
 				.expect(200)
 					.then(({ body }) => {
-						expect(body.articles).toBeSortedBy("article_id", {
+						expect(body.articles).toBeSortedBy("comment_count", {
 							coerce: true,
 						});
 					});
