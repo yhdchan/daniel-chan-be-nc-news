@@ -1,4 +1,4 @@
-# NC News
+# NC News 
 
 ## Hosting a PSQL DB using Heroku
 
